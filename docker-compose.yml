@@ -54,6 +54,8 @@ services:
     depends_on:
       - mysql
       - consul
+    volumes:
+      - ./logs:/var/log/microservices
 
     networks:
       - microservices
@@ -93,6 +95,9 @@ services:
       - mysql
       - consul
 
+    volumes:
+      - ./logs:/var/log/microservices
+
     networks:
       - microservices
       - monitoring
@@ -124,6 +129,9 @@ services:
     depends_on:
       - mysql
       - consul
+
+    volumes:
+      - ./logs:/var/log/microservices
 
     networks:
       - microservices
@@ -157,6 +165,9 @@ services:
       - mysql
       - consul
 
+    volumes:
+      - ./logs:/var/log/microservices
+
     networks:
       - microservices
       - monitoring
@@ -187,6 +198,8 @@ services:
     depends_on:
       - mysql
       - consul
+    volumes:
+      - ./logs:/var/log/microservices
 
     networks:
       - microservices
@@ -220,6 +233,9 @@ services:
       - mysql
       - consul
 
+    volumes:
+      - ./logs:/var/log/microservices
+
     networks:
       - microservices
       - monitoring
@@ -251,6 +267,9 @@ services:
       - mysql
       - consul
 
+    volumes:
+      - ./logs:/var/log/microservices
+
     networks:
       - microservices
       - monitoring
@@ -281,6 +300,10 @@ services:
     depends_on:
       - mysql
       - consul
+
+    volumes:
+      - ./logs:/var/log/microservices
+
     networks:
       - microservices
       - monitoring
@@ -311,6 +334,9 @@ services:
     depends_on:
       - mysql
       - consul
+
+    volumes:
+      - ./logs:/var/log/microservices
 
     networks:
       - microservices

@@ -25,7 +25,7 @@
     <appender name="FILE"
               class="ch.qos.logback.core.FileAppender">
 
-        <file>../logs/api-gateway.log</file>
+        <file>/var/log/microservices/api-gateway.log</file>
 
         <append>true</append>
 
