@@ -1,0 +1,55 @@
+//local.file_match "microservice_logs" {
+//  path_targets = [
+//    {
+//      __path__ = "/var/log/microservices/*.log",
+//    },
+//  ]
+//}
+//
+//loki.source.file "microservice_logs" {
+//  targets    = local.file_match.microservice_logs.targets
+//  forward_to = [loki.write.loki.receiver]
+//}
+//
+//loki.write "loki" {
+//  endpoint {
+//    url = "http://loki:3100/loki/api/v1/push"
+//  }
+//}
+
+
+
+local.file_match "microservice_logs" {
+  path_targets = [
+    {
+      __path__ = "/var/log/microservices/*.log",
+    },
+  ]
+}
+
+loki.source.file "microservice_logs" {
+  targets    = local.file_match.microservice_logs.targets
+  forward_to = [loki.process.microservice_logs.receiver]
+}
+
+loki.process "microservice_logs" {
+
+  stage.regex {
+    expression = ".*/(?P<service>[^/]+)\\.log"
+    source     = "filename"
+  }
+
+  stage.labels {
+    values = {
+      service = "service",
+    }
+  }
+
+  forward_to = [loki.write.loki.receiver]
+}
+
+loki.write "loki" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

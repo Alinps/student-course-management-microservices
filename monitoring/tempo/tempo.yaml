@@ -1,0 +1,75 @@
+stream_over_http_enabled: true
+
+server:
+  http_listen_port: 3200
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "0.0.0.0:4317"
+        http:
+          endpoint: "0.0.0.0:4318"
+
+#Tells Tempo: "Process my traces and derive metrics from them."
+#  Tempo supports processors including service graphs and span metrics.
+metrics_generator:
+  storage:
+
+#    This is storage for the metrics generator's own state
+    path: /var/tempo/generator/wal
+
+#    It means:
+#    Tempo trace
+#    │
+#    ▼
+#    Metrics Generator
+#    │
+#    │ converts trace information
+#    ▼
+#    Metrics
+#    │
+#    ▼
+#    Prometheus
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: true
+
+storage:
+  trace:
+    backend: local
+    wal:
+      path: /var/tempo/wal
+    local:
+      path: /var/tempo/blocks
+
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors:
+
+#        - The service-graphs processor analyzes the parent/child relationships between spans to discover those service-to-service edges.
+#          It then creates metrics representing those relationships
+        - service-graphs
+
+#      This generates RED-style metrics from your spans:
+#
+#      R — Request rate
+#      E — Error rate
+#      D — Duration
+#
+#      For example:
+#
+#      Course Assignment
+#      requests/sec = 10
+#      error rate   = 0.2%
+#      latency      = 85 ms
+#
+#      Tempo documents span-metrics specifically as deriving request/error/duration
+#      metrics from spans.
+        - span-metrics
+
+usage_report:
+  reporting_enabled: false

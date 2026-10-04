@@ -1,0 +1,71 @@
+package com.example.batch_service.config;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.jspecify.annotations.NonNull;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.List;
+
+@Component
+public class InternalServiceAuthenticationFilter extends OncePerRequestFilter {
+
+    @Value("${internal.auth.service-name}")
+    private String expectedServiceName;
+
+    @Value("${internal.auth.service-key}")
+    private String expectedServiceKey;
+
+    @Override
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
+
+        String uri = request.getRequestURI();
+
+        boolean internalEndpoint = uri.startsWith("/batch/internal/");
+
+        if (!internalEndpoint) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String serviceName = request.getHeader("X-Service-Name");
+        String serviceKey = request.getHeader("X-Service-Key");
+
+        if (!expectedServiceName.equals(serviceName)
+                || !expectedServiceKey.equals(serviceKey)) {
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        serviceName,
+                        null,
+                        List.of(
+                                new SimpleGrantedAuthority(
+                                        "SERVICE_BATCH_READ"
+                                )
+                        )
+                );
+
+        SecurityContextHolder
+                .getContext()
+                .setAuthentication(authentication);
+
+        filterChain.doFilter(request, response);
+    }
+}

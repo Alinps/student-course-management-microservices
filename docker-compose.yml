@@ -1,0 +1,340 @@
+services:
+
+
+  mysql:
+    image: mysql:8.4
+    container_name: mysql
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    networks:
+      - microservices
+
+
+  consul:
+    image: hashicorp/consul:1.20
+    container_name: consul
+    restart: unless-stopped
+
+    ports:
+      - "8500:8500"
+
+    command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0
+
+    networks:
+      - microservices
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+
+    container_name: api-gateway
+
+    ports:
+      - "8080:8080"
+
+    environment:
+
+      JWT_SECRET: ${JWT_SECRET}
+
+      CONSUL_HOST: ${CONSUL_HOST}
+      CONSUL_PORT: ${CONSUL_PORT}
+
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+
+    depends_on:
+      - mysql
+      - consul
+
+    networks:
+      - microservices
+      - monitoring
+
+
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+
+    container_name: auth-service
+
+    ports:
+      - "8090:8090"
+
+    environment:
+      AUTH_DB_URL: ${AUTH_DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      AUTH_ADMIN_USERNAME: ${AUTH_ADMIN_USERNAME}
+      AUTH_ADMIN_EMAIL: ${AUTH_ADMIN_EMAIL}
+      AUTH_ADMIN_PASSWORD: ${AUTH_ADMIN_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY}
+
+      CONSUL_HOST: ${CONSUL_HOST}
+      CONSUL_PORT: ${CONSUL_PORT}
+
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+
+    depends_on:
+      - mysql
+      - consul
+
+    networks:
+      - microservices
+      - monitoring
+
+
+  student-service:
+    build:
+      context: ./student-service
+      dockerfile: Dockerfile
+
+    container_name: student-service
+
+    ports:
+      - "8084:8084"
+
+    environment:
+      STUDENT_DB_URL: ${STUDENT_DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY}
+
+      CONSUL_HOST: ${CONSUL_HOST}
+      CONSUL_PORT: ${CONSUL_PORT}
+
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+
+    depends_on:
+      - mysql
+      - consul
+
+    networks:
+      - microservices
+      - monitoring
+
+
+  course-service:
+    build:
+      context: ./course-service
+      dockerfile: Dockerfile
+
+    container_name: course-service
+
+    ports:
+      - "8083:8083"
+
+    environment:
+      COURSE_DB_URL: ${COURSE_DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY}
+
+      CONSUL_HOST: ${CONSUL_HOST}
+      CONSUL_PORT: ${CONSUL_PORT}
+
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+
+    depends_on:
+      - mysql
+      - consul
+
+    networks:
+      - microservices
+      - monitoring
+
+  employee-service:
+    build:
+      context: ./employee-service
+      dockerfile: Dockerfile
+
+    container_name: employee-service
+
+    ports:
+      - "8085:8085"
+
+    environment:
+      EMPLOYEE_DB_URL: ${EMPLOYEE_DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY}
+
+      CONSUL_HOST: ${CONSUL_HOST}
+      CONSUL_PORT: ${CONSUL_PORT}
+
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+
+    depends_on:
+      - mysql
+      - consul
+
+    networks:
+      - microservices
+      - monitoring
+
+
+  batch-service:
+    build:
+      context: ./batch-service
+      dockerfile: Dockerfile
+
+    container_name: batch-service
+
+    ports:
+      - "8087:8087"
+
+    environment:
+      BATCH_DB_URL: ${BATCH_DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY}
+
+      CONSUL_HOST: ${CONSUL_HOST}
+      CONSUL_PORT: ${CONSUL_PORT}
+
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+
+    depends_on:
+      - mysql
+      - consul
+
+    networks:
+      - microservices
+      - monitoring
+
+  course-assignment-service:
+    build:
+      context: ./course-assignment-service
+      dockerfile: Dockerfile
+
+    container_name: course-assignment-service
+
+    ports:
+      - "8086:8086"
+
+    environment:
+      COURSE_ASSIGNMENT_DB_URL: ${COURSE_ASSIGNMENT_DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY}
+
+      CONSUL_HOST: ${CONSUL_HOST}
+      CONSUL_PORT: ${CONSUL_PORT}
+
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+
+    depends_on:
+      - mysql
+      - consul
+
+    networks:
+      - microservices
+      - monitoring
+
+  student-batch-assignment-service:
+    build:
+      context: ./student-batch-assignment-service
+      dockerfile: Dockerfile
+
+    container_name: student-batch-assignment-service
+
+    ports:
+      - "8088:8088"
+
+    environment:
+      STUDENT_BATCH_ASSIGNMENT_DB_URL: ${STUDENT_BATCH_ASSIGNMENT_DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY}
+
+      CONSUL_HOST: ${CONSUL_HOST}
+      CONSUL_PORT: ${CONSUL_PORT}
+
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+
+    depends_on:
+      - mysql
+      - consul
+    networks:
+      - microservices
+      - monitoring
+
+  note-service:
+    build:
+      context: ./note-service
+      dockerfile: Dockerfile
+
+    container_name: note-service
+
+    ports:
+      - "8089:8089"
+
+    environment:
+      NOTE_DB_URL: ${NOTE_DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY}
+
+      CONSUL_HOST: ${CONSUL_HOST}
+      CONSUL_PORT: ${CONSUL_PORT}
+
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+
+    depends_on:
+      - mysql
+      - consul
+
+    networks:
+      - microservices
+      - monitoring
+
+
+
+
+
+
+
+
+
+
+
+
+
+volumes:
+  mysql_data:
+
+networks:
+  microservices:
+    external: true
+
+  monitoring:
+    external: true
+  
