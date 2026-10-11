@@ -31,6 +31,8 @@ public class SecurityConfig {
                         // =========================
                         .requestMatchers(
                                 "/auth/login",
+                                "/auth/refresh",
+                                "/auth/logout",
                                 "/auth/register/student"
                         ).permitAll()
 

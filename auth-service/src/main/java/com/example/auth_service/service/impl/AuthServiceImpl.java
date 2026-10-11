@@ -22,6 +22,9 @@ import com.example.auth_service.repository.RoleRepository;
 import com.example.auth_service.repository.UserRepository;
 import com.example.auth_service.service.AuthService;
 import com.example.auth_service.service.JwtService;
+import com.example.auth_service.service.RefreshTokenService;
+import com.example.auth_service.dto.request.RefreshTokenRequest;
+import com.example.auth_service.service.RotatedRefreshToken;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,10 +41,11 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
     private final StudentServiceClient studentServiceClient;
     private final EmployeeServiceClient employeeServiceClient;
-    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
 
 
 
@@ -165,23 +169,91 @@ public class AuthServiceImpl implements AuthService {
 
         User user = userRepository
                 .findByUsername(request.getUsername())
-                .orElseThrow(() -> new InvalidCredentialException("Invalid username or password"));
+                .orElseThrow(() ->
+                        new InvalidCredentialException(
+                                "Invalid username or password"
+                        )
+                );
 
         if (!passwordEncoder.matches(
                 request.getPassword(),
                 user.getPassword()
         )) {
-            throw new InvalidCredentialException("Invalid username or password");
+            throw new InvalidCredentialException(
+                    "Invalid username or password"
+            );
         }
 
-        String token = jwtService.generateToken(user);
+        if (!Boolean.TRUE.equals(user.getEnabled())) {
+            throw new InvalidCredentialException(
+                    "User account is disabled"
+            );
+        }
 
+        // Generate the access JWT.
+        String accessToken = jwtService.generateToken(user);
+
+        // Generate and persist the refresh token.
+        String refreshToken = refreshTokenService.createRefreshToken(user);
 
         return LoginResponse.builder()
-                .accessToken(token)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .tokenType("Bearer")
-                .expiresIn(3600000L)
+                .expiresIn(
+                        jwtService.getExpirationMillis() / 1000
+                )
                 .build();
+    }
+
+
+    /**
+     * Refreshes the client's authentication tokens.
+     *
+     * The refresh-token service validates and rotates the submitted token.
+     * After successful rotation, this method generates a new access JWT
+     * for the user associated with the refresh token.
+     */
+    @Override
+    public LoginResponse refresh(RefreshTokenRequest request) {
+
+        // Validate the existing refresh token and rotate it.
+        RotatedRefreshToken rotatedToken =
+                refreshTokenService.rotateRefreshToken(
+                        request.getRefreshToken()
+                );
+
+        // Retrieve the user associated with the validated refresh token.
+        User user = rotatedToken.user();
+
+        // Generate a new access JWT using the existing JWT service.
+        String accessToken = jwtService.generateToken(user);
+
+        // Return the new access token and replacement refresh token.
+        return LoginResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(rotatedToken.rawToken())
+                .tokenType("Bearer")
+                .expiresIn(
+                        jwtService.getExpirationMillis() / 1000
+                )
+                .build();
+    }
+
+
+    /**
+     * Logs out the client by revoking its refresh token.
+     *
+     * The refresh-token service handles the database lookup and revocation.
+     */
+    @Override
+    public void logout(RefreshTokenRequest request) {
+
+        refreshTokenService.revokeRefreshToken(
+                request.getRefreshToken()
+        );
+
+        log.info("Logout request processed");
     }
 
 }

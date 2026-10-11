@@ -84,6 +84,10 @@ public class JwtService {
                 .get("roles", List.class);
     }
 
+    public long getExpirationMillis() {
+        return jwtExpiration;
+    }
+
 
     // =========================
     // VALIDATE TOKEN
