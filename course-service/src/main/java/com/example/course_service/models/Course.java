@@ -3,7 +3,7 @@ package com.example.course_service.models;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
-import java.util.List;
+
 
 import com.example.course_service.enums.*;
 import lombok.AllArgsConstructor;

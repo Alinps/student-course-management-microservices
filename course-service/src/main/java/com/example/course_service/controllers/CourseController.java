@@ -61,7 +61,7 @@ public class CourseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CourseResponse> updateStudent(
+    public ResponseEntity<CourseResponse> updateCourse(
             @PathVariable Long id,
             @Valid @RequestBody  CourseRequest request) {
 

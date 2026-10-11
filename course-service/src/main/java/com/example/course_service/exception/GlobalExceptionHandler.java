@@ -30,41 +30,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errors);
     }
 
-//    @ExceptionHandler(CourseAlreadyExistException.class)
-//    public ResponseEntity<ErrorResponse> handleCourseAlreadyExist(
-//            CourseAlreadyExistException ex,
-//            HttpServletRequest request) {
-//
-//        ErrorResponse error = new ErrorResponse(
-//                LocalDateTime.now(),
-//                HttpStatus.CONFLICT.value(), //returns the numeric status code:
-//                HttpStatus.CONFLICT.getReasonPhrase(), //returns the standard HTTP description eg: Not Found
-//                ex.getMessage(),
-//                request.getRequestURI() //Returns the requested path eg: /api/batches/1
-//        );
-//
-//        return ResponseEntity
-//                .status(HttpStatus.CONFLICT)
-//                .body(error);
-//    }
-
-//    @ExceptionHandler(CourseNotFoundException.class)
-//    public ResponseEntity<ErrorResponse> handleCourseNotFound(
-//            CourseNotFoundException ex,
-//            HttpServletRequest request) {
-//
-//        ErrorResponse error = new ErrorResponse(
-//                LocalDateTime.now(),
-//                HttpStatus.NOT_FOUND.value(), //returns the numeric status code:
-//                HttpStatus.NOT_FOUND.getReasonPhrase(), //returns the standard HTTP description eg: Not Found
-//                ex.getMessage(),
-//                request.getRequestURI() //Returns the requested path eg: /api/batches/1
-//        );
-//
-//        return ResponseEntity
-//                .status(HttpStatus.NOT_FOUND)
-//                .body(error);
-//    }
 
 
     @ExceptionHandler(IncorrectTechnologyException.class)
@@ -103,22 +68,7 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
-//    @ExceptionHandler(TechnologyNotFoundException.class)
-//    public ResponseEntity<ErrorResponse> handleTechnologyNotFound(
-//            TechnologyNotFoundException ex,
-//            HttpServletRequest request) {
-//
-//        ErrorResponse error = new ErrorResponse(
-//                LocalDateTime.now(),
-//                HttpStatus.NOT_FOUND.value(), //returns the numeric status code:
-//                HttpStatus.NOT_FOUND.getReasonPhrase(), //returns the standard HTTP description eg: Not Found
-//                ex.getMessage(),
-//                request.getRequestURI() //Returns the requested path eg: /api/batches/1
-//        );
-//        return ResponseEntity
-//                .status(HttpStatus.NOT_FOUND)
-//                .body(error);
-//    }
+
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(

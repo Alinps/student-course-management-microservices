@@ -16,5 +16,4 @@ public class TechnologyPatchRequest {
     private String technologyName;
     private String description;
     private Boolean active;
-
 }
